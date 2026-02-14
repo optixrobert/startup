@@ -1,4 +1,4 @@
-export type Product = { id: string; name: string; price: number; category?: string };
+export type Product = { id: string; name: string; price: number; category?: string; imageUrl?: string };
 export type OrderItem = { productId: string; qty: number };
 export type Order = { id: string; items: OrderItem[]; total: number; table?: string; createdAt: string };
 export type Employee = { id: string; name: string; role: 'cameriere' | 'barista' | 'cuoco' | 'manager' };
@@ -8,11 +8,11 @@ const id = () => Math.random().toString(36).slice(2, 10);
 
 export const db = {
   products: [
-    { id: id(), name: 'Espresso', price: 1.2, category: 'Caffetteria' },
-    { id: id(), name: 'Cappuccino', price: 1.8, category: 'Caffetteria' },
-    { id: id(), name: 'Cornetto', price: 1.5, category: 'Colazione' },
-    { id: id(), name: 'Panino', price: 4.5, category: 'Cucina' },
-    { id: id(), name: 'Acqua 0.5L', price: 1.0, category: 'Bevande' }
+    { id: id(), name: 'Espresso', price: 1.2, category: 'Caffetteria', imageUrl: 'https://picsum.photos/seed/espresso/400/300' },
+    { id: id(), name: 'Cappuccino', price: 1.8, category: 'Caffetteria', imageUrl: 'https://picsum.photos/seed/cappuccino/400/300' },
+    { id: id(), name: 'Cornetto', price: 1.5, category: 'Colazione', imageUrl: 'https://picsum.photos/seed/cornetto/400/300' },
+    { id: id(), name: 'Panino', price: 4.5, category: 'Cucina', imageUrl: 'https://picsum.photos/seed/panino/400/300' },
+    { id: id(), name: 'Acqua 0.5L', price: 1.0, category: 'Bevande', imageUrl: 'https://picsum.photos/seed/acqua/400/300' }
   ] as Product[],
   orders: [] as Order[],
   employees: [

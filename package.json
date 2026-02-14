@@ -5,16 +5,20 @@
   "description": "Gestionale bar/ristoranti con POS touch e gestione turni",
   "workspaces": [
     "apps/api",
-    "apps/web"
+    "apps/web",
+    "apps/mobile"
   ],
   "scripts": {
     "dev:api": "npm run dev -w apps/api",
     "dev:web": "npm run dev -w apps/web",
-    "dev": "concurrently -k -n API,WEB -c green,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:mobile": "npm run dev -w apps/mobile",
+    "dev": "concurrently -k -n API,WEB,MOBILE -c green,cyan,magenta \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:mobile\"",
     "start:api": "npm run start -w apps/api",
     "start:web": "npm run start -w apps/web",
+    "start:mobile": "npm run start -w apps/mobile",
     "build:api": "npm run build -w apps/api",
-    "build:web": "npm run build -w apps/web"
+    "build:web": "npm run build -w apps/web",
+    "build:mobile": "npm run build -w apps/mobile"
   },
   "engines": {
     "node": ">=18"

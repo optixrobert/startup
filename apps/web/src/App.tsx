@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-type Product = { id: string; name: string; price: number; category?: string };
+type Product = { id: string; name: string; price: number; category?: string; imageUrl?: string };
 type Employee = { id: string; name: string; role: 'cameriere' | 'barista' | 'cuoco' | 'manager' };
 type Shift = { id: string; employeeId: string; start: string; end: string };
 
@@ -114,7 +114,8 @@ export default function App() {
               <div className="grid">
                 {products.map(p => (
                   <button key={p.id} className="btn" onClick={() => addToCart(p.id)}>
-                    <div>{p.name}</div>
+                    {p.imageUrl ? <img src={p.imageUrl} alt={p.name} /> : null}
+                    <div style={{ fontWeight: 600 }}>{p.name}</div>
                     <div className="price">€ {p.price.toFixed(2)}</div>
                   </button>
                 ))}
