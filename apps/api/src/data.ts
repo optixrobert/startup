@@ -5,6 +5,7 @@ export type Employee = { id: string; name: string; role: 'cameriere' | 'barista'
 export type Shift = { id: string; employeeId: string; start: string; end: string };
 export type BeachSpot = { id: string; row: number; col: number; type: 'ombrellone' | 'lettino' };
 export type BeachReservation = { id: string; spotId: string; name: string; date: string; status: 'booked' | 'checked_in' | 'completed' };
+export type BeachConfig = { rows: number; cols: number; walkwayEvery: number; premiumRows: number };
 
 const id = () => Math.random().toString(36).slice(2, 10);
 
@@ -24,7 +25,8 @@ export const db = {
   ] as Employee[],
   shifts: [] as Shift[],
   beachSpots: [] as BeachSpot[],
-  beachReservations: [] as BeachReservation[]
+  beachReservations: [] as BeachReservation[],
+  beachConfig: { rows: 8, cols: 12, walkwayEvery: 4, premiumRows: 1 } as BeachConfig
 };
 
 export function createOrder(items: OrderItem[], table?: string): Order {
@@ -49,10 +51,8 @@ export function addShift(shift: Omit<Shift, 'id'>): Shift {
   return s;
 }
 
-function ensureBeachSpots() {
-  if (db.beachSpots.length > 0) return;
-  const rows = 8;
-  const cols = 12;
+function regenBeachSpots(rows: number, cols: number) {
+  db.beachSpots = [];
   for (let r = 1; r <= rows; r++) {
     for (let c = 1; c <= cols; c++) {
       db.beachSpots.push({ id: `R${r}-P${c}`, row: r, col: c, type: 'ombrellone' });
@@ -60,12 +60,18 @@ function ensureBeachSpots() {
   }
 }
 
+function ensureBeachSpots() {
+  const { rows, cols } = db.beachConfig;
+  if (db.beachSpots.length > 0) return;
+  regenBeachSpots(rows, cols);
+}
+
 export function getBeachSpotsForDate(date: string) {
   ensureBeachSpots();
   const spots = db.beachSpots.map(s => {
     const res = db.beachReservations.find(x => x.spotId === s.id && x.date === date && x.status !== 'completed');
     const status = res ? res.status : 'free';
-    return { ...s, status };
+    return { ...s, status, name: res ? res.name : undefined };
   });
   return spots;
 }
@@ -97,4 +103,20 @@ export function checkOutSpot(spotId: string, date: string) {
   const res = db.beachReservations.find(x => x.spotId === spotId && x.date === date && x.status !== 'completed');
   if (res) res.status = 'completed';
   return res;
+}
+
+export function getBeachConfig() {
+  return db.beachConfig;
+}
+
+export function updateBeachConfig(next: Partial<BeachConfig>) {
+  const prev = db.beachConfig;
+  const rows = Math.max(1, Math.min(30, next.rows ?? prev.rows));
+  const cols = Math.max(1, Math.min(40, next.cols ?? prev.cols));
+  const walkwayEvery = Math.max(0, Math.min(20, next.walkwayEvery ?? prev.walkwayEvery));
+  const premiumRows = Math.max(0, Math.min(rows, next.premiumRows ?? prev.premiumRows));
+  const changed = rows !== prev.rows || cols !== prev.cols;
+  db.beachConfig = { rows, cols, walkwayEvery, premiumRows };
+  if (changed) regenBeachSpots(rows, cols);
+  return db.beachConfig;
 }

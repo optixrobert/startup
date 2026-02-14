@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 type Product = { id: string; name: string; price: number; category?: string; imageUrl?: string };
 type Employee = { id: string; name: string; role: 'cameriere' | 'barista' | 'cuoco' | 'manager' };
 type Shift = { id: string; employeeId: string; start: string; end: string };
-type BeachSpot = { id: string; row: number; col: number; type: 'ombrellone' | 'lettino'; status: 'free' | 'booked' | 'checked_in' };
+type BeachSpot = { id: string; row: number; col: number; type: 'ombrellone' | 'lettino'; status: 'free' | 'booked' | 'checked_in'; name?: string };
+type BeachReservation = { id: string; spotId: string; name: string; date: string; status: 'booked' | 'checked_in' | 'completed' };
+type BeachConfig = { rows: number; cols: number; walkwayEvery: number; premiumRows: number };
 
 function Tab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
@@ -24,7 +26,7 @@ function Tab({ label, active, onClick }: { label: string; active: boolean; onCli
 }
 
 export default function App() {
-  const [tab, setTab] = useState<'pos' | 'turni' | 'lido'>('pos');
+  const [tab, setTab] = useState<'pos' | 'turni' | 'lido' | 'prenotazioni'>('pos');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [table, setTable] = useState('');
@@ -38,6 +40,11 @@ export default function App() {
   const [shiftEnd, setShiftEnd] = useState('');
   const [beachDate, setBeachDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [beachSpots, setBeachSpots] = useState<BeachSpot[]>([]);
+  const [beachCfg, setBeachCfg] = useState<BeachConfig | null>(null);
+  const [cfgOpen, setCfgOpen] = useState(false);
+  const [resvDate, setResvDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [reservations, setReservations] = useState<BeachReservation[]>([]);
+  const [orders, setOrders] = useState<{ id: string; total: number; table?: string; createdAt: string }[]>([]);
 
   useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(setProducts);
@@ -49,9 +56,14 @@ export default function App() {
       fetch('/api/shifts').then(r => r.json()).then(setShifts);
     }
     if (tab === 'lido') {
+      fetch('/api/beach/config').then(r => r.json()).then(setBeachCfg);
       fetch('/api/beach/spots?date=' + beachDate).then(r => r.json()).then(setBeachSpots);
     }
-  }, [tab, beachDate]);
+    if (tab === 'prenotazioni') {
+      fetch('/api/beach/reservations?date=' + resvDate).then(r => r.json()).then(setReservations);
+      fetch('/api/orders').then(r => r.json()).then(setOrders);
+    }
+  }, [tab, beachDate, resvDate]);
 
   const total = useMemo(() => {
     return Object.keys(cart).reduce((sum, id) => {
@@ -128,6 +140,7 @@ export default function App() {
           <button className={`nav-btn ${tab === 'pos' ? 'active' : ''}`} onClick={() => setTab('pos')}>Cassa</button>
           <button className={`nav-btn ${tab === 'turni' ? 'active' : ''}`} onClick={() => setTab('turni')}>Turni</button>
           <button className={`nav-btn ${tab === 'lido' ? 'active' : ''}`} onClick={() => setTab('lido')}>Lido</button>
+          <button className={`nav-btn ${tab === 'prenotazioni' ? 'active' : ''}`} onClick={() => setTab('prenotazioni')}>Prenotazioni</button>
         </div>
       </aside>
       <div className="content">
@@ -168,7 +181,7 @@ export default function App() {
               <div className="footer">
                 <div className="row">
                   <label htmlFor="table">Tavolo</label>
-                  <input id="table" value={table} onChange={e => setTable(e.target.value)} placeholder="es. 5" style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8, width: 100 }} />
+                <input id="table" value={table} onChange={e => setTable(e.target.value)} placeholder="es. 5" style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e6e8ee', borderRadius: 10, padding: 10, width: 120 }} />
                 </div>
                 <div className="row">
                   <strong>Totale: € {total.toFixed(2)}</strong>
@@ -182,8 +195,8 @@ export default function App() {
             <section className="panel">
               <h2 style={{ margin: '4px 0 12px 0' }}>Dipendenti & Turni</h2>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
-                <input value={empName} onChange={e => setEmpName(e.target.value)} placeholder="Nome" style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8 }} />
-                <select value={empRole} onChange={e => setEmpRole(e.target.value as Employee['role'])} style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8 }}>
+                <input value={empName} onChange={e => setEmpName(e.target.value)} placeholder="Nome" style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e6e8ee', borderRadius: 10, padding: 10 }} />
+                <select value={empRole} onChange={e => setEmpRole(e.target.value as Employee['role'])} style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e6e8ee', borderRadius: 10, padding: 10 }}>
                   <option value="cameriere">Cameriere</option>
                   <option value="barista">Barista</option>
                   <option value="cuoco">Cuoco</option>
@@ -206,12 +219,12 @@ export default function App() {
                 <div>
                   <h3>Turni</h3>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                    <select value={shiftEmp} onChange={e => setShiftEmp(e.target.value)} style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8, minWidth: 180 }} >
+                    <select value={shiftEmp} onChange={e => setShiftEmp(e.target.value)} style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e6e8ee', borderRadius: 10, padding: 10, minWidth: 200 }} >
                       <option value="">Seleziona</option>
                       {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                     </select>
-                    <input type="datetime-local" value={shiftStart} onChange={e => setShiftStart(e.target.value)} style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8 }} />
-                    <input type="datetime-local" value={shiftEnd} onChange={e => setShiftEnd(e.target.value)} style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8 }} />
+                    <input type="datetime-local" value={shiftStart} onChange={e => setShiftStart(e.target.value)} style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e6e8ee', borderRadius: 10, padding: 10 }} />
+                    <input type="datetime-local" value={shiftEnd} onChange={e => setShiftEnd(e.target.value)} style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e6e8ee', borderRadius: 10, padding: 10 }} />
                     <button onClick={addShift} className="primary">Aggiungi Turno</button>
                   </div>
                   <div className="list">
@@ -232,27 +245,97 @@ export default function App() {
               </div>
             </section>
           </div>
+        ) : tab === 'prenotazioni' ? (
+          <div className="page" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <section className="panel">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <h2 style={{ margin: 0 }}>Prenotazioni Lido</h2>
+                <input type="date" value={resvDate} onChange={e => setResvDate(e.target.value)} />
+              </div>
+              <div className="list">
+                {reservations.map(r => (
+                  <div key={r.id} className="list-item">
+                    <div>Posto {r.spotId} • {r.name}</div>
+                    <div style={{ color: r.status === 'checked_in' ? '#b91c1c' : '#065f46' }}>{r.status}</div>
+                  </div>
+                ))}
+                {!reservations.length ? <div className="list-item"><div>Nessuna prenotazione</div></div> : null}
+              </div>
+            </section>
+            <section className="panel">
+              <h2 style={{ marginTop: 0 }}>Transazioni</h2>
+              <div className="list">
+                {orders.map(o => (
+                  <div key={o.id} className="list-item">
+                    <div>{new Date(o.createdAt).toLocaleString()}</div>
+                    <div>€ {Number(o.total).toFixed(2)}</div>
+                  </div>
+                ))}
+                {!orders.length ? <div className="list-item"><div>Nessuna transazione</div></div> : null}
+              </div>
+            </section>
+          </div>
         ) : (
           <div className="page" style={{ gridTemplateColumns: '1fr' }}>
             <section className="panel">
               <div className="lido-top">
                 <h2 style={{ margin: 0, marginRight: 8 }}>Lido</h2>
                 <input type="date" value={beachDate} onChange={e => setBeachDate(e.target.value)} />
+                <button className="primary" onClick={() => setCfgOpen(v => !v)} style={{ padding: '8px 10px' }}>{cfgOpen ? 'Chiudi' : 'Impostazioni'}</button>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div className="spot free" style={{ padding: '4px 8px' }}>Libero</div>
-                  <div className="spot booked" style={{ padding: '4px 8px' }}>Prenotato</div>
-                  <div className="spot checked_in" style={{ padding: '4px 8px' }}>Occupato</div>
+                  <div className="spot free" style={{ padding: '4px 8px' }}>Bianco</div>
+                  <div className="spot booked" style={{ padding: '4px 8px' }}>Verde</div>
+                  <div className="spot checked_in" style={{ padding: '4px 8px' }}>Rosso</div>
                 </div>
               </div>
+              {cfgOpen && beachCfg ? (
+                <div className="panel" style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <label>Righe</label>
+                    <input type="number" min={1} max={30} defaultValue={beachCfg.rows} id="cfg-rows" />
+                    <label>Colonne</label>
+                    <input type="number" min={1} max={40} defaultValue={beachCfg.cols} id="cfg-cols" />
+                    <label>Passerella ogni</label>
+                    <input type="number" min={0} max={20} defaultValue={beachCfg.walkwayEvery} id="cfg-walk" />
+                    <label>File premium</label>
+                    <input type="number" min={0} max={10} defaultValue={beachCfg.premiumRows} id="cfg-prem" />
+                    <button className="primary" onClick={async () => {
+                      const rows = Number((document.getElementById('cfg-rows') as HTMLInputElement).value);
+                      const cols = Number((document.getElementById('cfg-cols') as HTMLInputElement).value);
+                      const walkwayEvery = Number((document.getElementById('cfg-walk') as HTMLInputElement).value);
+                      const premiumRows = Number((document.getElementById('cfg-prem') as HTMLInputElement).value);
+                      const res = await fetch('/api/beach/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows, cols, walkwayEvery, premiumRows }) });
+                      if (res.ok) {
+                        const cfg = await res.json();
+                        setBeachCfg(cfg);
+                        setBeachSpots(await fetch('/api/beach/spots?date=' + beachDate).then(r => r.json()));
+                      }
+                    }}>Applica</button>
+                  </div>
+                </div>
+              ) : null}
               <div className="lido-wrapper">
                 <div className="sea">Mare</div>
                 <div className="lido-grid">
-                  {beachSpots.map(s => (
-                    <div key={s.id} className={`spot ${s.status} ${s.row <= 2 ? 'nearsea' : ''}`} onClick={() => clickSpot(s)}>
-                      <div className="icon">⛱️</div>
-                      <div className="label">R{s.row}-P{s.col}</div>
-                    </div>
-                  ))}
+                  {beachSpots.map(s => {
+                    const walk = beachCfg?.walkwayEvery ?? 4;
+                    const isWalkway = walk > 0 && s.col % walk === 0;
+                    const onClick = isWalkway ? undefined : () => clickSpot(s);
+                    return (
+                      <div key={s.id} className={`spot ${s.status} ${(beachCfg && s.row <= beachCfg.premiumRows) ? 'premium nearsea' : (s.row <= 2 ? 'nearsea' : '')} ${isWalkway ? 'walkway' : ''}`} onClick={onClick}>
+                        {!isWalkway ? (
+                          <>
+                            <div className="icon-area">
+                              <div className="umbrella"></div>
+                              <div className="beds"><span className="bed" /><span className="bed" /></div>
+                            </div>
+                            <div className="label">R{s.row}-P{s.col}</div>
+                            {s.name ? <div className="customer">{s.name}</div> : null}
+                          </>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </section>

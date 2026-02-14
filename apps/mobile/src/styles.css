@@ -1,9 +1,9 @@
 :root {
-  --bg: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
-  --primary: #2563eb;
-  --border: #e5e7eb;
+  --bg: #f7f8fb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #1e3a8a;
+  --border: #e6e8ee;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body, #root { height: 100%; }
@@ -11,7 +11,7 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helve
 .app { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; min-height: 100%; }
 .top { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: #fff; }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; }
-.tile { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; }
+.tile { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.08); }
 .tile img { width: 100%; height: 92px; object-fit: cover; }
 .tile button { padding: 10px; text-align: left; background: #fff; border: 0; }
 .tile .name { font-weight: 600; }
@@ -19,7 +19,7 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helve
 .footer { margin-top: auto; padding: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; background: #fff; position: sticky; bottom: 0; }
 .qty { display: flex; gap: 8px; align-items: center; }
 .qty button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; }
-.primary { background: var(--primary); color: #fff; padding: 12px 16px; border-radius: 12px; border: 0; font-weight: 600; width: 100%; }
+.primary { background: linear-gradient(180deg, var(--primary), #102459); color: #fff; padding: 12px 16px; border-radius: 12px; border: 0; font-weight: 700; width: 100%; }
 .row { display: flex; gap: 8px; align-items: center; }
 .cart { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
 .cart-item { display: flex; justify-content: space-between; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }

@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { db, createOrder, addEmployee, addShift, getBeachSpotsForDate, reserveSpot, checkInSpot, checkOutSpot } from './data';
+import { db, createOrder, addEmployee, addShift, getBeachSpotsForDate, reserveSpot, checkInSpot, checkOutSpot, getBeachConfig, updateBeachConfig } from './data';
 
 const app = express();
 app.use(cors());
@@ -58,6 +58,18 @@ app.post('/api/beach/checkout', (req, res) => {
   const r = checkOutSpot(spotId, date);
   if (!r) return res.status(404).json({ error: 'Nessuna prenotazione trovata' });
   res.json(r);
+});
+app.get('/api/beach/reservations', (req, res) => {
+  const date = String(req.query.date || '').slice(0, 10);
+  if (date) return res.json(db.beachReservations.filter(x => x.date === date));
+  res.json(db.beachReservations);
+});
+app.get('/api/beach/config', (_req, res) => {
+  res.json(getBeachConfig());
+});
+app.post('/api/beach/config', (req, res) => {
+  const cfg = updateBeachConfig(req.body || {});
+  res.json(cfg);
 });
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
