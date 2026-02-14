@@ -183,7 +183,7 @@ export default function App() {
               <h2 style={{ margin: '4px 0 12px 0' }}>Dipendenti & Turni</h2>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
                 <input value={empName} onChange={e => setEmpName(e.target.value)} placeholder="Nome" style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8 }} />
-                <select value={empRole} onChange={e => setEmpRole(e.target.value as Employee['role'])} style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid # Madd', borderRadius: 8, padding: 8 }}>
+                <select value={empRole} onChange={e => setEmpRole(e.target.value as Employee['role'])} style={{ background: '#0f1b2e', color: '#c5d2e8', border: '1px solid #1f2937', borderRadius: 8, padding: 8 }}>
                   <option value="cameriere">Cameriere</option>
                   <option value="barista">Barista</option>
                   <option value="cuoco">Cuoco</option>
@@ -244,12 +244,16 @@ export default function App() {
                   <div className="spot checked_in" style={{ padding: '4px 8px' }}>Occupato</div>
                 </div>
               </div>
-              <div className="lido-grid">
-                {beachSpots.map(s => (
-                  <div key={s.id} className={`spot ${s.status}`} onClick={() => clickSpot(s)}>
-                    <div>{s.id}</div>
-                  </div>
-                ))}
+              <div className="lido-wrapper">
+                <div className="sea">Mare</div>
+                <div className="lido-grid">
+                  {beachSpots.map(s => (
+                    <div key={s.id} className={`spot ${s.status} ${s.row <= 2 ? 'nearsea' : ''}`} onClick={() => clickSpot(s)}>
+                      <div className="icon">⛱️</div>
+                      <div className="label">R{s.row}-P{s.col}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
           </div>
