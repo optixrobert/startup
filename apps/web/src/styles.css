@@ -52,3 +52,9 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: system
 .list { display: flex; flex-direction: column; gap: 8px; }
 .list-item { display: flex; justify-content: space-between; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #ffffff; box-shadow: var(--shadow); }
 @media (max-width: 920px) { .page { grid-template-columns: 1fr; } .sidebar { width: 72px; } .brand { display: none; } }
+.lido-top { display: flex; gap: 8px; align-items: center; padding: 4px 0 12px; }
+.lido-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; }
+.spot { border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; user-select: none; }
+.spot.free { background: #f8fafc; }
+.spot.booked { background: #fde68a; }
+.spot.checked_in { background: #bbf7d0; }

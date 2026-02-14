@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 type Product = { id: string; name: string; price: number; category?: string; imageUrl?: string };
 type Employee = { id: string; name: string; role: 'cameriere' | 'barista' | 'cuoco' | 'manager' };
 type Shift = { id: string; employeeId: string; start: string; end: string };
+type BeachSpot = { id: string; row: number; col: number; type: 'ombrellone' | 'lettino'; status: 'free' | 'booked' | 'checked_in' };
 
 function Tab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
@@ -23,7 +24,7 @@ function Tab({ label, active, onClick }: { label: string; active: boolean; onCli
 }
 
 export default function App() {
-  const [tab, setTab] = useState<'pos' | 'turni'>('pos');
+  const [tab, setTab] = useState<'pos' | 'turni' | 'lido'>('pos');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [table, setTable] = useState('');
@@ -35,6 +36,8 @@ export default function App() {
   const [shiftEmp, setShiftEmp] = useState<string>('');
   const [shiftStart, setShiftStart] = useState('');
   const [shiftEnd, setShiftEnd] = useState('');
+  const [beachDate, setBeachDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [beachSpots, setBeachSpots] = useState<BeachSpot[]>([]);
 
   useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(setProducts);
@@ -45,7 +48,10 @@ export default function App() {
       fetch('/api/employees').then(r => r.json()).then(setEmployees);
       fetch('/api/shifts').then(r => r.json()).then(setShifts);
     }
-  }, [tab]);
+    if (tab === 'lido') {
+      fetch('/api/beach/spots?date=' + beachDate).then(r => r.json()).then(setBeachSpots);
+    }
+  }, [tab, beachDate]);
 
   const total = useMemo(() => {
     return Object.keys(cart).reduce((sum, id) => {
@@ -95,6 +101,24 @@ export default function App() {
       setShifts(sh);
     }
   }
+  async function clickSpot(s: BeachSpot) {
+    if (s.status === 'free') {
+      const name = window.prompt('Nome cliente per prenotare?');
+      if (!name) return;
+      const res = await fetch('/api/beach/reservations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ spotId: s.id, name, date: beachDate }) });
+      if (res.ok) setBeachSpots(await fetch('/api/beach/spots?date=' + beachDate).then(r => r.json()));
+    } else if (s.status === 'booked') {
+      const ok = window.confirm('Effettuare check-in?');
+      if (!ok) return;
+      const res = await fetch('/api/beach/checkin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ spotId: s.id, date: beachDate }) });
+      if (res.ok) setBeachSpots(await fetch('/api/beach/spots?date=' + beachDate).then(r => r.json()));
+    } else if (s.status === 'checked_in') {
+      const ok = window.confirm('Eseguire check-out e liberare la postazione?');
+      if (!ok) return;
+      const res = await fetch('/api/beach/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ spotId: s.id, date: beachDate }) });
+      if (res.ok) setBeachSpots(await fetch('/api/beach/spots?date=' + beachDate).then(r => r.json()));
+    }
+  }
 
   return (
     <div className="layout">
@@ -103,6 +127,7 @@ export default function App() {
         <div className="nav">
           <button className={`nav-btn ${tab === 'pos' ? 'active' : ''}`} onClick={() => setTab('pos')}>Cassa</button>
           <button className={`nav-btn ${tab === 'turni' ? 'active' : ''}`} onClick={() => setTab('turni')}>Turni</button>
+          <button className={`nav-btn ${tab === 'lido' ? 'active' : ''}`} onClick={() => setTab('lido')}>Lido</button>
         </div>
       </aside>
       <div className="content">
@@ -152,7 +177,7 @@ export default function App() {
               </div>
             </aside>
           </div>
-        ) : (
+        ) : tab === 'turni' ? (
           <div className="page" style={{ gridTemplateColumns: '1fr' }}>
             <section className="panel">
               <h2 style={{ margin: '4px 0 12px 0' }}>Dipendenti & Turni</h2>
@@ -204,6 +229,27 @@ export default function App() {
                     })}
                   </div>
                 </div>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <div className="page" style={{ gridTemplateColumns: '1fr' }}>
+            <section className="panel">
+              <div className="lido-top">
+                <h2 style={{ margin: 0, marginRight: 8 }}>Lido</h2>
+                <input type="date" value={beachDate} onChange={e => setBeachDate(e.target.value)} />
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div className="spot free" style={{ padding: '4px 8px' }}>Libero</div>
+                  <div className="spot booked" style={{ padding: '4px 8px' }}>Prenotato</div>
+                  <div className="spot checked_in" style={{ padding: '4px 8px' }}>Occupato</div>
+                </div>
+              </div>
+              <div className="lido-grid">
+                {beachSpots.map(s => (
+                  <div key={s.id} className={`spot ${s.status}`} onClick={() => clickSpot(s)}>
+                    <div>{s.id}</div>
+                  </div>
+                ))}
               </div>
             </section>
           </div>

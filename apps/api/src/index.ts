@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { db, createOrder, addEmployee, addShift } from './data';
+import { db, createOrder, addEmployee, addShift, getBeachSpotsForDate, reserveSpot, checkInSpot, checkOutSpot } from './data';
 
 const app = express();
 app.use(cors());
@@ -30,6 +30,34 @@ app.post('/api/shifts', (req, res) => {
   if (!e) return res.status(404).json({ error: 'Dipendente non trovato' });
   const s = addShift({ employeeId, start, end });
   res.status(201).json(s);
+});
+
+app.get('/api/beach/spots', (req, res) => {
+  const date = String(req.query.date || '').slice(0, 10);
+  if (!date) return res.status(400).json({ error: 'date obbligatoria (YYYY-MM-DD)' });
+  const spots = getBeachSpotsForDate(date);
+  res.json(spots);
+});
+app.post('/api/beach/reservations', (req, res) => {
+  const { spotId, name, date } = req.body || {};
+  if (!spotId || !name || !date) return res.status(400).json({ error: 'spotId, name, date obbligatori' });
+  const r = reserveSpot(spotId, name, date);
+  if (!r) return res.status(404).json({ error: 'Postazione non trovata' });
+  res.status(201).json(r);
+});
+app.post('/api/beach/checkin', (req, res) => {
+  const { spotId, date } = req.body || {};
+  if (!spotId || !date) return res.status(400).json({ error: 'spotId, date obbligatori' });
+  const r = checkInSpot(spotId, date);
+  if (!r) return res.status(404).json({ error: 'Postazione non trovata' });
+  res.json(r);
+});
+app.post('/api/beach/checkout', (req, res) => {
+  const { spotId, date } = req.body || {};
+  if (!spotId || !date) return res.status(400).json({ error: 'spotId, date obbligatori' });
+  const r = checkOutSpot(spotId, date);
+  if (!r) return res.status(404).json({ error: 'Nessuna prenotazione trovata' });
+  res.json(r);
 });
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
