@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { db, createOrder, addEmployee, addShift, getBeachSpotsForDate, reserveSpot, checkInSpot, checkOutSpot, getBeachConfig, updateBeachConfig } from './data';
 
 const app = express();
@@ -70,6 +71,14 @@ app.get('/api/beach/config', (_req, res) => {
 app.post('/api/beach/config', (req, res) => {
   const cfg = updateBeachConfig(req.body || {});
   res.json(cfg);
+});
+
+// Static assets (serve web build)
+const staticDir = path.resolve(__dirname, '../../web/dist');
+app.use(express.static(staticDir));
+// SPA fallback for non-API routes
+app.get(/^\/(?!api).*/, (_req, res) => {
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;

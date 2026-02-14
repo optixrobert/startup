@@ -23,6 +23,7 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: system
   gap: 16px;
 }
 .brand { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: 0.4px; }
+.brand-logo { height: 28px; width: auto; display: block; }
 .nav { display: flex; flex-direction: column; gap: 8px; }
 .nav-btn {
   width: 100%; text-align: left; cursor: pointer;
@@ -109,3 +110,20 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: system
 }
 .premium .umbrella { width: 32px; height: 32px; border-width: 4px; }
 .premium .bed { width: 22px; }
+.impact-hero { position: relative; overflow: hidden; padding: 64px 20px; background:
+  radial-gradient(1200px 600px at -10% -20%, #e8eefc 0%, rgba(232,238,252,0) 60%),
+  radial-gradient(800px 400px at 110% -10%, #fdeed8 0%, rgba(253,238,216,0) 60%),
+  linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%); }
+.impact-hero .container { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: center; }
+.impact-title { font-size: 52px; line-height: 1.05; margin: 0 0 10px; letter-spacing: -0.5px; }
+.impact-sub { font-size: 18px; color: var(--muted); margin: 0 0 16px; }
+.impact-cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.ghost { background: #fff; color: var(--text); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border); font-weight: 700; box-shadow: var(--shadow); cursor: pointer; }
+.trust { display: flex; gap: 12px; margin-top: 16px; color: var(--muted); font-size: 14px; }
+.bento { max-width: 1040px; margin: 16px auto 24px; display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+.bento .card { background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); padding: 16px; }
+.bento .split { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.screenshot { height: 180px; border-radius: 12px; background: linear-gradient(180deg, #eef2ff, #fff); border: 1px solid var(--border); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); }
+.wave { height: 32px; background: radial-gradient(24px 8px at 24px 0, rgba(0,0,0,0.06) 25%, transparent 26%) repeat-x; background-size: 48px 16px; opacity: .5; }
+.landing-top { position: absolute; top: 12px; left: 20px; right: 20px; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
+.landing-top .brand-logo { height: 30px; }
