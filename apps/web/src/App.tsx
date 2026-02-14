@@ -26,6 +26,7 @@ function Tab({ label, active, onClick }: { label: string; active: boolean; onCli
 }
 
 export default function App() {
+  const [view, setView] = useState<'landing' | 'app'>(() => (location.hash === '#app' ? 'app' : 'landing'));
   const [tab, setTab] = useState<'pos' | 'turni' | 'lido' | 'prenotazioni'>('pos');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -48,6 +49,11 @@ export default function App() {
 
   useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(setProducts);
+  }, []);
+  useEffect(() => {
+    const onHash = () => setView(location.hash === '#app' ? 'app' : 'landing');
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
   useEffect(() => {
@@ -132,6 +138,56 @@ export default function App() {
     }
   }
 
+  if (view === 'landing') {
+    return (
+      <div className="landing">
+        <div className="landing-header">
+          <div className="landing-brand">POS Manager</div>
+          <div className="cta">
+            <button className="primary" onClick={() => { setTab('pos'); location.hash = '#app'; setView('app'); }}>Entra nel POS</button>
+          </div>
+        </div>
+        <div className="landing-hero">
+          <div>
+            <div className="badge">Suite per bar, ristoranti e lidi</div>
+            <h1 className="hero-title">Vendi più veloce. Gestisci turni e lido in un’unica app.</h1>
+            <div className="hero-sub">Touch ottimizzato, comande mobile, mappa lido realistica e un design premium.</div>
+            <div className="cta">
+              <button className="primary" onClick={() => { setTab('pos'); location.hash = '#app'; setView('app'); }}>Prova il POS</button>
+              <button className="primary" onClick={() => { setTab('lido'); location.hash = '#app'; setView('app'); }}>Gestione Lido</button>
+              <a className="primary" href="http://localhost:5174" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>App Camerieri</a>
+            </div>
+          </div>
+          <div className="feature-grid">
+            <div className="feature">
+              <h4>Cassa Touch</h4>
+              <div>Prodotti con foto, carrello veloce, totale e pagamento.</div>
+            </div>
+            <div className="feature">
+              <h4>Comande Mobile</h4>
+              <div>Invio diretto in cassa/cucina da smartphone.</div>
+            </div>
+            <div className="feature">
+              <h4>Lido Realistico</h4>
+              <div>Ombrelloni con nome cliente, passerelle e file premium.</div>
+            </div>
+            <div className="feature">
+              <h4>Turni e Ruoli</h4>
+              <div>Gestione dipendenti e pianificazione turni.</div>
+            </div>
+            <div className="feature">
+              <h4>Prenotazioni</h4>
+              <div>Lista giornaliera e transazioni in un colpo d’occhio.</div>
+            </div>
+            <div className="feature">
+              <h4>Design Premium</h4>
+              <div>Interfaccia elegante, leggibile, pronta per il tocco.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="layout">
       <aside className="sidebar">
